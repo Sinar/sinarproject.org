@@ -39,7 +39,6 @@ All packages are namespace packages under `src/`, managed by `mr.developer` from
 | `sinarproject.customizations` | Main customization glue (browserlayer, registry, views, z3c.jbot overrides) |
 | `sinar.activity` | Activity / ProjectActivity content types |
 | `sinar.article` | Article content type |
-| `sinar.citation` | Citation content type |
 | `sinar.indicators` | M&E indicators |
 | `sinar.miscbehavior` | Extra behaviors for content types |
 | `sinar.opportunities` | Opportunity content type |
