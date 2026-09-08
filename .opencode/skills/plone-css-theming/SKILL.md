@@ -15,6 +15,9 @@ mechanism by scope:
 
 ## Project facts
 
+- sinarproject.org currently runs Plone's **default barceloneta theme**
+  (Bootstrap 5, registered by `plone.staticresources`); no custom theme
+  package is installed in the buildout.
 - `sinarproject.customizations` already publishes static files:
   `browser/configure.zcml` registers
   `<plone:static name="sinarproject.customizations" type="plone" directory="static" />`,
