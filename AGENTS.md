@@ -1,11 +1,11 @@
 # sinarproject.org — Agent Quick Reference
 
-Plone 6.0.15 CMS project. Buildout-driven, Python 3.12, GPLv2.
+Plone 6.1.5 CMS project. Buildout-driven, Python 3.12, GPLv2.
 
 ## Boot
 
 ```
-bin/buildout          # bootstrap + install
+.venv/bin/buildout    # run buildout (bin/buildout exists once generated)
 bin/instance fg       # dev server, port 8080, login admin:admin
 bin/zopepy            # interactive Plone shell
 bin/update_locale     # regenerate i18n catalogs
@@ -17,17 +17,21 @@ bin/update_locale     # regenerate i18n catalogs
 2. Check for `.venv` virtual environment for the supported Python version (3.12)
    - If `.venv` exists → activate it
    - If `.venv` doesn't exist → create it with `uv venv --python 3.12` then activate
-3. Install recommended build tool versions from Plone 6.0.15:
-   - `zc.buildout = 4.1.4`
-   - `wheel = 0.45.1`
-   - `setuptools = 75.8.2`
-4. Run `bin/buildout` to bootstrap the project
+3. Install build tool versions matching the Plone 6.1.5 `versions.cfg` pins
+   (versions must match exactly, or buildout aborts with a `VersionConflict`):
+   - `zc.buildout = 4.2.0`
+   - `setuptools = 81.0.0`
+   - `wheel = 0.47.0`
+   `uv pip install zc.buildout==4.2.0 setuptools==81.0.0 wheel==0.47.0`
+4. Run `.venv/bin/buildout` (generates `bin/buildout` for subsequent runs)
 
 ## Deployment mode
 
 ```
 bin/buildout -c deployment.cfg
 # starts ZEO server (8100) + instance as ZEO client (8090)
+# also pins plone.recipe.zeoserver = 4.0.1 and checks out
+# sinar.article from the plone-6-update branch
 ```
 
 ## Source layout
@@ -60,8 +64,9 @@ The instance will log any import errors, missing dependencies, or configuration 
 
 - **`mr.developer` auto-checks out every package** (`auto-checkout = *`, `always-checkout = true`). Never edit checked-out packages directly — make changes in the git working copy and re-run buildout.
 - **`eea.facetednavigation`** appears in `.installed.cfg` and `buildout.cfg` — it's an extra dependency beyond the base Plone install.
-- **`sinar.article` and `sinar.organization`** are on the `plone-6-update` branch. Other packages target `main`.
-- **`sinar.miscbehavior`, `sinar.organization`, `sinar.project`, `collective.vocabularies.iso`** declare compatibility with Plone 4.3/5.x — verify before assuming Plone 6-only behavior.
+- **`sinar.article`** is checked out from the `plone-6-update` branch in `deployment.cfg`; the default buildout uses `main` for all packages (`collective.vocabularies.iso` uses its default `master` branch).
+- **Stale classifiers:** some packages (e.g. `sinar.project` declares Plone 5.2 / Python 2.7 in setup.py) have outdated metadata, but their `main` branches work on Plone 6.1.5 — judge by running the build/tests, not by reading classifiers.
+- **Build tool pins:** the venv must run the exact `zc.buildout`/`setuptools`/`wheel` versions pinned by the Plone release `versions.cfg`, or buildout aborts with a `VersionConflict`.
 - Lint/format: `isort`, `flake8`, `black`. Run per-package: `cd src/<pkg> && tox -e lint` or `tox -e black-check`.
 
 ## Commit messages
