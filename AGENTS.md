@@ -72,5 +72,5 @@ The instance will log any import errors, missing dependencies, or configuration 
 ## Commit messages
 
 - Author: check current git user via `git config user.name`
-- Follow [Conventional Commits](https://github.com/conventional-commits/conventionalcommits.org/blob/master/content/v1.0.0/index.md) with multi-paragraph bodies (summary, blank line, explanation, blank line, attribution)
-- If AI-assisted, add the attribution line at the end using the format `Assisted-by: <AGENT_NAME>:<MODEL_VERSION>` (see [Linux Kernel AI Attribution](https://github.com/torvalds/linux/blob/master/Documentation/process/coding-assistants.rst))
+- Follow [Conventional Commits](https://github.com/conventional-commits/conventionalcommits.org/blob/master/content/v1.0.0/index.md) with multi-paragraph bodies (summary, blank line, explanation)
+- Do **not** include AI attribution (e.g. `Assisted-by:`) lines in commit messages
