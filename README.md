@@ -1,55 +1,48 @@
 # sinarproject.org
-Buildout for sinarproject.org website based on sinargo buildout and packages
 
-## Installation and Buildout
+Buildout for the sinarproject.org website, based on the Sinar organization's
+Plone packages.
 
-### Ubuntu 22.04.2 LTS
+- Plone 6.1.5 (see `extends` in `buildout.cfg`)
+- Python 3.12
+- `zc.buildout` + `mr.developer` (content packages are git-checked-out into `src/`)
 
-Setup system dependencies:
+## Requirements
 
-```
-sudo apt install build-essential python3-dev
-```
+- [uv](https://docs.astral.sh/uv/) for managing the build virtualenv
+- `git` with access to the `Sinar` GitHub org (the default buildout clones over SSH)
 
-### Setup venv and buildout environment Ubuntu 22.04.2
+## Setup
 
-```
-python3.8 -m venv venv
-venv/bin/pip install setuptools==65.7.0 zc.buildout==3.0.1 wheel==0.38.4 \
-plonecli
-venv/bin/buildout bootstrap
-```
+```sh
+uv venv --python 3.12
+source .venv/bin/activate
 
-### venv and buildout environment where base Python is newer than 3.8
+# build tool versions must match the Plone 6.1.5 versions.cfg pins
+uv pip install zc.buildout==4.2.0 setuptools==81.0.0 wheel==0.47.0
 
-Plone 5.2 currently works best on Python 3.8, where base version is not
-Python 3.8, you will need to install custom version of Python 3.8 using
-tools such as `pyenv`
-
-Python module dependencies
-
-```
-apt install libssl-dev libsqlite3-dev libbz2-dev libncurses-dev \
-libffi-dev libreadline-dev liblzma-dev
+buildout
 ```
 
-Setup venv using pyenv Python3.8 binary
-```
-git clone https://github.com/pyenv/pyenv.git ~/.pyenv
-~/.pyenv/bin/install 3.8
-~/.pyenv/versions/3.8.17/bin/python3.8 -m venv venv
+## Development
+
+```sh
+bin/instance fg     # dev server at http://localhost:8080, login admin:admin
+bin/zopepy          # interactive Plone shell
+bin/update_locale   # regenerate i18n catalogs
 ```
 
-### Buildout
+## Deployment
 
-Run buildout:
-
-```
-bin/buildout -vvv
+```sh
+bin/buildout -c deployment.cfg
 ```
 
-Starting service in foreground debug mode:
+Starts a ZEO server on port 8100 and runs the instance as a ZEO client on
+port 8090.
 
-```
-bin/instance fg
-```
+## Layout
+
+- `buildout.cfg` — default (development) buildout
+- `deployment.cfg` — ZEO deployment buildout
+- `src/` — package working copies managed by `mr.developer` (edit upstream in each package's git repo, not in place)
