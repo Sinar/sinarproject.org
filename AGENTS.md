@@ -24,15 +24,34 @@ bin/update_locale     # regenerate i18n catalogs
    - `wheel = 0.47.0`
    `uv pip install zc.buildout==4.2.0 setuptools==81.0.0 wheel==0.47.0`
 4. Run `.venv/bin/buildout` (generates `bin/buildout` for subsequent runs)
+5. Remove the namespace `.pth` file from the venv (re-run this after any
+   `uv venv` recreation or `zc.buildout` reinstall):
+   `rm .venv/lib/python3.12/site-packages/zc.buildout-*-nspkg.pth`
+   The `zc.buildout` wheel ships this file, and `site` executes it at every
+   Python startup, pre-registering `sys.modules['zc']` with only the venv's
+   own `zc` portion. That shadows the pkg_resources-style `zc` namespace
+   packages in the buildout eggs (`zc.lockfile`, `zc.recipe.egg`, ...), so
+   any generated script that imports one of them before `pkg_resources` is
+   loaded breaks — most visibly `bin/zeo` with
+   `ModuleNotFoundError: No module named 'zc.lockfile'`.
 
 ## Deployment mode
 
 ```
-bin/buildout -c deployment.cfg
-# starts ZEO server (8100) + instance as ZEO client (8090)
+.venv/bin/buildout -c deployment.cfg
+# builds the ZEO server (127.0.0.1:8100) + instance as ZEO client (8080)
 # also pins plone.recipe.zeoserver = 4.0.1 and checks out
 # sinar.article from the plone-6-update branch
+
+bin/zeo start       # start the ZEO server (daemon)
+bin/zeo status      # check ZEO server state
+bin/instance fg     # start the instance (ZEO client) on port 8080
 ```
+
+The instance uses `shared-blob = on`: on a single machine it shares
+`var/blobstorage` with the ZEO server instead of keeping a separate
+blob cache (a non-shared client would force the `zeocache` layout and
+crash on the existing `bushy` blob directory).
 
 ## Source layout
 
@@ -62,6 +81,14 @@ The instance will log any import errors, missing dependencies, or configuration 
 
 ## Gotchas
 
+- **The `zc.buildout` wheel breaks ZEO if its `nspkg.pth` stays in the venv.**
+  `.venv/lib/python3.12/site-packages/zc.buildout-*-nspkg.pth` must be removed
+  (see step 5 in "Initialize project"). Without it, `bin/zeo` dies with
+  `ModuleNotFoundError: No module named 'zc.lockfile'`: the `.pth` pre-registers
+  `sys.modules['zc']` at interpreter startup, hiding the `zc.lockfile` egg's
+  pkg_resources namespace. Egg scripts like `bin/zeo` or `bin/zopepy` survive
+  because they import `pkg_resources` first (which repairs the namespace);
+  `parts/zeo/bin/runzeo` does not, so only the ZEO server is affected.
 - **`mr.developer` auto-checks out every package** (`auto-checkout = *`, `always-checkout = true`). Never edit checked-out packages directly — make changes in the git working copy and re-run buildout.
 - **`eea.facetednavigation`** appears in `.installed.cfg` and `buildout.cfg` — it's an extra dependency beyond the base Plone install.
 - **`sinar.article`** is checked out from the `plone-6-update` branch in `deployment.cfg`; the default buildout uses `main` for all packages (`collective.vocabularies.iso` uses its default `master` branch).
